@@ -150,3 +150,61 @@ test.describe("Validating Button Click Actions", async ()=>{
         await page1.getByRole('button', { name: 'Close' }).click();
     })
 })
+
+test.describe("Validate To-Do List", ()=>{
+    
+    test("Verify Default To-Do List", async ({page})=>{
+        await page.goto("/")
+        const toDoLink = page.getByRole('link',{name:'TO DO LIST'})
+        await toDoLink.scrollIntoViewIfNeeded()
+        await toDoLink.click()
+
+        const page1 = await page.waitForEvent('popup')
+
+        await expect(page1.getByRole('heading',{name:'TO-DO LIST '})).toBeVisible()
+        await expect(page1.getByPlaceholder('Add new todo')).toBeVisible()
+
+        const items = await page1.getByRole('listitem').allTextContents();
+        expect(items).toEqual([" Go to potion class", " Buy new robes", " Practice magic"])
+        
+    })
+
+    test("Add new To-Do List", async ({page})=>{
+        await page.goto("/")
+        const toDoLink = page.locator("#to-do-list")
+        await toDoLink.scrollIntoViewIfNeeded()
+        await toDoLink.click()
+
+        const page1 = await page.waitForEvent('popup')
+               
+        await expect(page1.getByRole('heading',{name:'TO-DO LIST '})).toBeVisible()
+        await expect(page1.getByPlaceholder('Add new todo')).toBeVisible()
+
+        await page1.getByPlaceholder('Add new todo').fill("My Own List Item")
+        const items = await page1.getByRole('listitem').allTextContents();
+        expect(items).toEqual([" Go to potion class", " Buy new robes", " Practice magic"])
+
+    })
+
+    test("Remove recently added To-Do List", async ({page})=>{
+        await page.goto("/")
+        const toDoLink = page.getByText('TO DO LIST',{exact:true})
+        await toDoLink.scrollIntoViewIfNeeded()
+        await toDoLink.click();
+
+        const page1 = await page.waitForEvent('popup')
+
+        await expect(page1.getByRole('heading',{name:'TO-DO LIST '})).toBeVisible()
+        await expect(page1.getByPlaceholder('Add new todo')).toBeVisible()
+
+        let item = page1.getByRole('listitem').filter({has: page1.getByText(' Go to potion class')})
+        await item.click()
+        await page1.waitForTimeout(1000);
+        await item.locator("span").click()
+        await page1.waitForTimeout(2000);
+        const items = await page1.getByRole('listitem').allTextContents();
+        expect(items).toEqual([" Buy new robes", " Practice magic"])
+        expect(await item.isVisible()).toBeFalsy()
+
+    })
+})
