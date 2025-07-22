@@ -13,7 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   expect: {
-    timeout:20000
+    timeout:10000
   },
   testDir: './tests',
   /* Run tests in files in parallel */

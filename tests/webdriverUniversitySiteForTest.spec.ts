@@ -33,7 +33,7 @@ test.describe("Validate Contact Us Functionality", () =>{
         await page.close();
     })
 
-    test.only("Perform Submit Operation", async ({page})=>{
+    test("Perform Submit Operation", async ({page})=>{
         await page.goto("/")
 
         let contactUs = page.getByRole('link',{name:'CONTACT US'});
@@ -61,5 +61,92 @@ test.describe("Validate Contact Us Functionality", () =>{
         
         await page1.close();
         await page.close();
+    })
+})
+
+
+test.describe("Validate Login Functionality",async ()=>{
+    test("Perform Login with Correct Credentials", async ({page})=>{
+        await page.goto("/");
+        let loginPortal = page.getByRole("link",{name: 'LOGIN PORTAL'})
+        await loginPortal.scrollIntoViewIfNeeded()
+        await loginPortal.click();
+
+        const page1 =  await page.waitForEvent('popup');
+
+        let username = page1.getByPlaceholder("Username")
+        let password = page1.getByPlaceholder("Password")
+        let loginButton = page1.getByRole("button",{name:'Login'})
+
+        await username.fill('webdriver',{force:true});
+        await password.pressSequentially('webdriver123');
+          
+        page1.on('dialog', dialog =>{
+            expect(dialog.message()).toEqual("validation succeeded")
+            dialog.accept()
+        })
+
+        await loginButton.click({delay:2000})
+       
+        await page1.close();
+        await page.close();
+    })
+
+    test("Perform Login with Invalid Credentials", async ({page})=>{
+        await page.goto("/")
+        let loginPortal = page.getByRole('link',{name:'Login Portal'});
+        await loginPortal.scrollIntoViewIfNeeded();
+        await loginPortal.click();
+
+        const page1 = await page.waitForEvent('popup');
+
+        await page1.getByPlaceholder("Username").fill("webdriver");
+        await page1.getByPlaceholder("Password").fill("webdriver");
+
+        page1.on('dialog', dialog=>{
+            expect(dialog.message()).toEqual("validation failed")
+            dialog.accept();
+        })
+
+        await page1.getByRole("button",{name:'Login'}).click();
+
+        await page1.close();
+        await page.close();
+
+    })
+})
+
+test.describe("Validating Button Click Actions", async ()=>{
+    test("Webelement Click",async ({page})=>{
+
+        await page.goto("/")
+        let buttonClicks = page.getByRole('link',{name:'BUTTON CLICKS'})
+
+        await buttonClicks.scrollIntoViewIfNeeded()
+        await buttonClicks.click()
+
+        const page1 = await page.waitForEvent('popup')
+
+        let webElementClick = page1.getByText("CLICK ME!",{exact:true})
+        await webElementClick.click({delay:2000})
+        await page1.getByRole('button', { name: 'Close' }).click();
+    })
+
+    test("Mouse Move and Click", async ({page})=>{
+        await page.goto("/")
+        let buttonClicks = page.getByRole('link',{name:'BUTTON CLICKS'})
+
+        await buttonClicks.scrollIntoViewIfNeeded()
+        await buttonClicks.click()
+
+        const page1 = await page.waitForEvent('popup')
+        let webElementClick = page1.getByText("CLICK ME!!!",{exact:true})
+
+        await webElementClick.highlight();
+        await webElementClick.hover();
+        await page1.mouse.down()
+        await page1.mouse.up()
+
+        await page1.getByRole('button', { name: 'Close' }).click();
     })
 })
